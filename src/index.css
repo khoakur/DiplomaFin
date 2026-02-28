@@ -1,0 +1,145 @@
+/* ------------------- БАЗОВЫЕ СТИЛИ ------------------- */
+:root {
+  --color-bg: #f4f6f9;
+  --color-header: #1e293b;
+  --color-header-text: #ffffff;
+  --color-accent: #38bdf8;
+  --color-card-bg: #ffffff;
+  --color-card-shadow: rgba(0, 0, 0, 0.05);
+  --font-primary: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-primary);
+  line-height: 1.6;
+  background-color: var(--color-bg);
+  color: #333;
+  min-height: 100vh;
+}
+
+/* ------------------- HEADER ------------------- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  background-color: var(--color-header);
+  color: var(--color-header-text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.header .logo {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav a {
+  color: var(--color-header-text);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.nav a:hover {
+  color: var(--color-accent);
+}
+
+/* Валюта */
+.currency-select select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background-color: #2c3e50;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.currency-select select:hover {
+  background-color: #34495e;
+}
+
+/* ------------------- КОНТЕЙНЕР СТРАНИЦ ------------------- */
+.container {
+  max-width: 1100px;
+  margin: 30px auto;
+  padding: 0 20px;
+}
+
+/* ------------------- КАРТОЧКИ / ПАНЕЛИ ------------------- */
+.card {
+  background-color: var(--color-card-bg);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px var(--color-card-shadow);
+  margin-bottom: 20px;
+}
+
+/* Заголовки */
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+/* Кнопки */
+button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--color-accent);
+  color: #fff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: #0ea5e9;
+}
+
+/* Таблицы */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  text-align: left;
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+th {
+  background-color: #f1f5f9;
+  font-weight: 600;
+}
+
+/* ------------------- АДАПТИВНОСТЬ ------------------- */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 20px;
+    gap: 10px;
+  }
+
+  .nav {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .currency-select {
+    margin-top: 10px;
+  }
+}
