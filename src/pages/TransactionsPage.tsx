@@ -3,101 +3,178 @@ import { TransactionsContext } from "../context/TransactionsContext";
 import type { Transaction } from "../context/TransactionsContext";
 
 export default function TransactionsPage() {
-  const { transactions, addTransaction } = useContext(TransactionsContext);
+  const { transactions, addTransaction, deleteTransaction, updateTransaction } =
+    useContext(TransactionsContext);
 
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Еда");
-  const [amount, setAmount] = useState<number>(0);
+  const [amount, setAmount] = useState<string>(""); // теперь строка
   const [date, setDate] = useState("");
 
-  const categories = ["Еда", "Транспорт", "Развлечения", "Доход", "Другое"];
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  // Фильтры
+  const [filterCategory, setFilterCategory] = useState("Все");
+  const [filterType, setFilterType] = useState("Все");
+
+  const categories = ["Еда", "Транспорт", "Развлечения", "Доход", "Другое", "Накопления"];
 
   const handleAdd = () => {
     if (!description || !amount || !date) return;
-    addTransaction({ date, description, category, amount });
+
+    addTransaction({ date, description, category, amount: Number(amount) });
+
     setDescription("");
-    setAmount(0);
+    setAmount(""); // сброс пустой строки
     setDate("");
     setCategory("Еда");
   };
+
+  const startEdit = (tx: Transaction) => {
+    setEditingId(tx.id);
+    setDescription(tx.description);
+    setCategory(tx.category);
+    setAmount(tx.amount.toString());
+    setDate(tx.date);
+  };
+
+  const saveEdit = () => {
+    if (editingId === null) return;
+
+    updateTransaction({
+      id: editingId,
+      description,
+      category,
+      amount: Number(amount),
+      date,
+    });
+
+    setEditingId(null);
+    setDescription("");
+    setAmount("");
+    setDate("");
+  };
+
+  // Фильтруем транзакции
+  const filteredTransactions = transactions.filter((t) => {
+    let pass = true;
+    if (filterCategory !== "Все") pass = pass && t.category === filterCategory;
+    if (filterType === "Доход") pass = pass && t.amount > 0;
+    if (filterType === "Расход") pass = pass && t.amount < 0;
+    return pass;
+  });
 
   return (
     <div className="container">
       <h1>Транзакции</h1>
 
-      {/* Форма добавления */}
-      <div className="card" style={{ marginBottom: "20px" }}>
-        <h3>Добавить транзакцию</h3>
-        <div
-          style={{
-            display: "flex",
-            gap: "10px",
-            flexWrap: "wrap",
-            marginTop: "10px",
-          }}
-        >
+      <div className="card">
+        <h3>{editingId ? "Редактировать транзакцию" : "Добавить транзакцию"}</h3>
+
+        <div className="form">
           <input
+            className="input"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            style={{ flex: 1, padding: "6px" }}
           />
+
           <input
+            className="input"
             type="text"
             placeholder="Описание"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            style={{ flex: 2, padding: "6px" }}
           />
+
           <select
+            className="input"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            style={{ flex: 1, padding: "6px" }}
           >
             {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
+              <option key={cat}>{cat}</option>
             ))}
           </select>
+
           <input
+            className="input"
             type="number"
             placeholder="Сумма"
             value={amount}
-            onChange={(e) => setAmount(Number(e.target.value))}
-            style={{ flex: 1, padding: "6px" }}
+            onChange={(e) => setAmount(e.target.value)}
           />
-          <button onClick={handleAdd}>Добавить</button>
+
+          {editingId ? (
+            <button className="btn save" onClick={saveEdit}>
+              Сохранить
+            </button>
+          ) : (
+            <button className="btn add" onClick={handleAdd}>
+              Добавить
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Таблица транзакций */}
+      {/* Фильтры */}
+      <div className="card" style={{ marginBottom: "20px" }}>
+        <h3>Фильтры</h3>
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
+          <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+            <option>Все</option>
+            {categories.map((cat) => (
+              <option key={cat}>{cat}</option>
+            ))}
+          </select>
+
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
+            <option>Все</option>
+            <option>Доход</option>
+            <option>Расход</option>
+          </select>
+        </div>
+      </div>
+
       <div className="card">
-        <h3>Последние транзакции</h3>
-        <table>
+        <h3>Все транзакции</h3>
+
+        <table className="transactions-table">
           <thead>
             <tr>
               <th>Дата</th>
               <th>Описание</th>
               <th>Категория</th>
-              <th>Сумма (BYN)</th>
+              <th>Сумма</th>
+              <th>Действия</th>
             </tr>
           </thead>
+
           <tbody>
-            {transactions.length === 0 && (
-              <tr>
-                <td colSpan={4} style={{ textAlign: "center", padding: "20px" }}>
-                  Транзакций пока нет
-                </td>
-              </tr>
-            )}
-            {transactions.map((tx: Transaction) => (
+            {filteredTransactions.map((tx) => (
               <tr key={tx.id}>
                 <td>{tx.date}</td>
                 <td>{tx.description}</td>
                 <td>{tx.category}</td>
-                <td style={{ color: tx.amount < 0 ? "#ef4444" : "#10b981" }}>
+
+                <td className={tx.amount < 0 ? "expense" : "income"}>
                   {tx.amount}
+                </td>
+
+                <td className="actions">
+                  <button
+                    className="btn edit"
+                    onClick={() => startEdit(tx)}
+                  >
+                    ✏
+                  </button>
+
+                  <button
+                    className="btn delete"
+                    onClick={() => deleteTransaction(tx.id)}
+                  >
+                    🗑
+                  </button>
                 </td>
               </tr>
             ))}

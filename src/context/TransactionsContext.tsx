@@ -12,11 +12,15 @@ export type Transaction = {
 type TransactionsContextType = {
   transactions: Transaction[];
   addTransaction: (tx: Omit<Transaction, "id">) => void;
+  deleteTransaction: (id: number) => void;
+  updateTransaction: (tx: Transaction) => void;
 };
 
 export const TransactionsContext = createContext<TransactionsContextType>({
   transactions: [],
   addTransaction: () => {},
+  deleteTransaction: () => {},
+  updateTransaction: () => {},
 });
 
 export default function TransactionsProvider({ children }: { children: ReactNode }) {
@@ -34,8 +38,22 @@ export default function TransactionsProvider({ children }: { children: ReactNode
     setTransactions([newTx, ...transactions]);
   };
 
+  const deleteTransaction = (id: number) => {
+    setTransactions(transactions.filter((tx) => tx.id !== id));
+  };
+
+  const updateTransaction = (updatedTx: Transaction) => {
+    setTransactions(
+      transactions.map((tx) =>
+        tx.id === updatedTx.id ? updatedTx : tx
+      )
+    );
+  };
+
   return (
-    <TransactionsContext.Provider value={{ transactions, addTransaction }}>
+    <TransactionsContext.Provider
+      value={{ transactions, addTransaction, deleteTransaction, updateTransaction }}
+    >
       {children}
     </TransactionsContext.Provider>
   );
