@@ -8,12 +8,11 @@ export default function TransactionsPage() {
 
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("Еда");
-  const [amount, setAmount] = useState<string>(""); // теперь строка
+  const [amount, setAmount] = useState<string>("");
   const [date, setDate] = useState("");
 
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  // Фильтры
   const [filterCategory, setFilterCategory] = useState("Все");
   const [filterType, setFilterType] = useState("Все");
 
@@ -25,7 +24,7 @@ export default function TransactionsPage() {
     addTransaction({ date, description, category, amount: Number(amount) });
 
     setDescription("");
-    setAmount(""); // сброс пустой строки
+    setAmount("");
     setDate("");
     setCategory("Еда");
   };
@@ -55,7 +54,6 @@ export default function TransactionsPage() {
     setDate("");
   };
 
-  // Фильтруем транзакции
   const filteredTransactions = transactions.filter((t) => {
     let pass = true;
     if (filterCategory !== "Все") pass = pass && t.category === filterCategory;
@@ -63,6 +61,37 @@ export default function TransactionsPage() {
     if (filterType === "Расход") pass = pass && t.amount < 0;
     return pass;
   });
+
+  // Экспорт CSV
+  const exportToCSV = () => {
+    if (filteredTransactions.length === 0) return;
+
+    const headers = ["Дата", "Описание", "Категория", "Сумма"];
+
+    const rows = filteredTransactions.map((t) => [
+      t.date,
+      t.description,
+      t.category,
+      t.amount.toString(),
+    ]);
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.join(";"))
+      .join("\n");
+
+    const blob = new Blob(["\uFEFF" + csvContent], {
+  type: "text/csv;charset=utf-8;",
+});
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "transactions.csv";
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="container">
@@ -120,6 +149,7 @@ export default function TransactionsPage() {
       {/* Фильтры */}
       <div className="card" style={{ marginBottom: "20px" }}>
         <h3>Фильтры</h3>
+
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "10px" }}>
           <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
             <option>Все</option>
@@ -133,6 +163,10 @@ export default function TransactionsPage() {
             <option>Доход</option>
             <option>Расход</option>
           </select>
+
+          <button className="btn" onClick={exportToCSV}>
+            ⬇ Скачать CSV
+          </button>
         </div>
       </div>
 
@@ -162,10 +196,7 @@ export default function TransactionsPage() {
                 </td>
 
                 <td className="actions">
-                  <button
-                    className="btn edit"
-                    onClick={() => startEdit(tx)}
-                  >
+                  <button className="btn edit" onClick={() => startEdit(tx)}>
                     ✏
                   </button>
 
